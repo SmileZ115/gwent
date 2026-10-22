@@ -1,0 +1,44 @@
+[gd_scene format=3 uid="uid://bnmojecgpbh7p"]
+
+[ext_resource type="Script" uid="uid://c8e4gj3vauhib" path="res://scripts/main.gd" id="1_elqb8"]
+
+[node name="Node2D" type="Node2D" unique_id=1223189282]
+script = ExtResource("1_elqb8")
+
+[node name="Hand" type="HBoxContainer" parent="." unique_id=67005531]
+offset_right = 40.0
+offset_bottom = 40.0
+theme_override_constants/separation = 10
+
+[node name="BattleField" type="Node2D" parent="." unique_id=807207217]
+
+[node name="Points" type="Label" parent="." unique_id=579491611]
+offset_left = 118.0
+offset_top = 947.0
+offset_right = 219.0
+offset_bottom = 970.0
+text = "Pontuação: 0"
+
+[node name="Turn" type="Label" parent="." unique_id=1789058824]
+offset_left = 598.0
+offset_top = 309.0
+offset_right = 638.0
+offset_bottom = 332.0
+
+[node name="AIBattleField" type="Node2D" parent="." unique_id=1761868185]
+
+[node name="AIPoints" type="Label" parent="." unique_id=700582536]
+offset_left = 106.0
+offset_top = 59.0
+offset_right = 169.0
+offset_bottom = 82.0
+text = "Pontuacao: 0"
+
+[node name="PassTurn" type="Button" parent="." unique_id=2009969746]
+offset_left = 123.0
+offset_top = 900.0
+offset_right = 214.0
+offset_bottom = 939.0
+text = "Pass Turn"
+
+[connection signal="pressed" from="PassTurn" to="." method="_on_pass_turn_pressed"]
