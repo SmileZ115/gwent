@@ -1,15 +1,6 @@
-<<<<<<< HEAD
 # Godot 4+ specific ignores
 .godot/
 /android/
-=======
-<<<<<<< HEAD
-# Godot 4.2+ specific ignores
-~*.dll
-
-# Godot 4+ specific ignores
-.godot/
-.nomedia
 
 # Godot-specific ignores
 .import/
@@ -17,7 +8,7 @@ export.cfg
 export_credentials.cfg
 *.tmp
 
-# Imported translations (automatically generated from CSV files)
+# Imported translations
 *.translation
 
 # Mono-specific ignores
@@ -27,11 +18,3 @@ mono_crash.*.json
 
 # Export outputs
 *.exe
-# Uncomment if your project does not version PCK files as runtime dependencies.
-# *.pck
-=======
-# Godot 4+ specific ignores
-.godot/
-/android/
->>>>>>> 8d3554b (initial commit: card game based on The Witcher 3 Gwent)
->>>>>>> 416996d
