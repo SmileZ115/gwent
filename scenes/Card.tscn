@@ -1,0 +1,27 @@
+[gd_scene format=3 uid="uid://ctr0lcryx0qg"]
+
+[ext_resource type="Script" uid="uid://cu7udwdwot0ms" path="res://scripts/card.gd" id="1_yiag5"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_6kesh"]
+size = Vector2(80, 120)
+
+[node name="Carta" type="Area2D" unique_id=194108311]
+script = ExtResource("1_yiag5")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=847129002]
+position = Vector2(40, 60)
+shape = SubResource("RectangleShape2D_6kesh")
+
+[node name="ColorRect" type="ColorRect" parent="." unique_id=552039032]
+offset_right = 80.0
+offset_bottom = 120.0
+color = Color(1, 0, 1, 1)
+
+[node name="Label" type="Label" parent="." unique_id=497208210]
+offset_left = 10.0
+offset_top = 10.0
+offset_right = 58.0
+offset_bottom = 33.0
+text = "Geralt"
+
+[connection signal="input_event" from="." to="." method="_on_input_event"]
