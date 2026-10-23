@@ -7,6 +7,12 @@ var ai_cards
 var screen_size: Vector2
 var player_passed: bool
 var ai_passed: bool
+<<<<<<< HEAD
+=======
+var player_lives: int = 2
+var ai_lives: int = 2
+var round_number: int = 1
+>>>>>>> 416996d
 
 enum GameState{
 	START,
@@ -30,6 +36,7 @@ func _ready() -> void:
 		create_card('Carpeado', 3, 'melee'),
 		create_card('Vesemir', 10, 'melee')
 	]
+<<<<<<< HEAD
 	card_pool.shuffle()
 	var player_cards = card_pool.slice(0, 5)
 	ai_cards = card_pool.slice(5, 10)
@@ -38,6 +45,26 @@ func _ready() -> void:
 	var total_width = player_cards.size() * 90
 	var x_pos = (screen_size.x / 2) - (total_width / 2)
 	start_game()
+=======
+	
+	deal_cards()
+	start_game()
+
+func create_card(name: String, power: int, type: String) -> CardData:
+	var data = CardData.new()
+	data.card_name = name
+	data.card_power = power
+	data.card_type = type
+	return data
+
+func deal_cards():
+	card_pool.shuffle()
+	var player_cards = card_pool.slice(0, 5)
+	ai_cards = card_pool.slice(5, 10)
+	var total_cards = card_pool.size()
+	var total_width = player_cards.size() * 90
+	var x_pos = (screen_size.x / 2) - (total_width / 2)
+>>>>>>> 416996d
 	
 	var i = 0
 	for data in player_cards:
@@ -49,6 +76,7 @@ func _ready() -> void:
 		$Hand.add_child(card)
 		i += 1
 
+<<<<<<< HEAD
 func create_card(name: String, power: int, type: String) -> CardData:
 	var data = CardData.new()
 	data.card_name = name
@@ -56,6 +84,8 @@ func create_card(name: String, power: int, type: String) -> CardData:
 	data.card_type = type
 	return data
 
+=======
+>>>>>>> 416996d
 func _on_card_clicked(card) -> void:
 	if current_state == GameState.PLAYER_TURN:
 		card.in_field = true
@@ -65,7 +95,10 @@ func _on_card_clicked(card) -> void:
 		card.position = Vector2((screen_size.x / 2) + (count - 1) * 90 - 180, screen_size.y * 0.71)
 		change_turn()
 		calculate_points()
+<<<<<<< HEAD
 		ai_turn()
+=======
+>>>>>>> 416996d
 
 func start_game():
 	var rand = randi() % 2
@@ -78,6 +111,27 @@ func start_game():
 		ai_turn()
 
 func ai_turn():
+<<<<<<< HEAD
+=======
+	print("ai_turn chamado | ai_passed: ", ai_passed, " | player_passed: ", player_passed)
+	if ai_passed:
+		if player_passed:
+			end_turn()
+		else:
+			change_turn()
+		return
+	if ai_cards.size() ==0:
+		ai_passed = true
+		if player_passed:
+			end_turn()
+		else:
+			change_turn()
+		return
+	if player_passed and get_ai_points() > get_player_points():
+		ai_passed = true
+		end_turn()
+		return
+>>>>>>> 416996d
 	if ai_cards.size() > 0:
 		var rand_index = randi() % ai_cards.size()
 		var chosen_card = ai_cards[rand_index]
@@ -90,16 +144,32 @@ func ai_turn():
 		card.position = Vector2((screen_size.x / 2) + (count - 1) * 90 - 180, screen_size.y * 0.4)
 		ai_cards.erase(chosen_card)
 		calculate_points()
+<<<<<<< HEAD
 		change_turn()
 
 func change_turn():
 	if current_state == GameState.PLAYER_TURN:
 		current_state = GameState.AI_TURN
 		$Turn.text = "AI's Turn"
+=======
+		if player_passed:
+			ai_turn()
+		else:
+			change_turn()
+
+func change_turn():
+	if current_state == GameState.END_GAME:
+		return
+	if current_state == GameState.PLAYER_TURN:
+		current_state = GameState.AI_TURN
+		$Turn.text = "AI's Turn"
+		ai_turn()
+>>>>>>> 416996d
 	else:
 		current_state = GameState.PLAYER_TURN
 		$Turn.text = "Players Turn"
 
+<<<<<<< HEAD
 func calculate_points() -> void:
 	var total = 0
 	for card  in $BattleField.get_children():
@@ -123,3 +193,88 @@ func _on_pass_turn_pressed() -> void:
 
 func game_over():
 	pass
+=======
+func get_player_points() -> int:
+	var total = 0
+	for card in $BattleField.get_children():
+		total += card.card_power
+	return total
+
+func get_ai_points() -> int:
+	var total = 0
+	for card in $AIBattleField.get_children():
+		total += card.card_power
+	return total
+
+func calculate_points() -> void:
+	$Points.text = "Pontuacao: " + str(get_player_points())
+	$AIPoints.text = "Pontuacao: " + str(get_ai_points())
+
+func reset_battlefield():
+	player_passed = false
+	ai_passed = false
+	if get_player_points() > get_ai_points():
+		current_state = GameState.PLAYER_TURN
+		$Turn.text = "Players Turn"
+	elif get_ai_points() > get_player_points():
+		current_state = GameState.AI_TURN
+		$Turn.text = "AI's Turn"
+	else:
+		start_game()
+	for card in $BattleField.get_children():
+		card.queue_free()
+	for card in $AIBattleField.get_children():
+		card.queue_free()
+	for card in $Hand.get_children():
+		card.queue_free()
+	$Points.text = "Pontuacao: 0"
+	$AIPoints.text = "Pontuacao: 0"
+	deal_cards()
+
+func end_turn():
+	var player_points = get_player_points()
+	var ai_points = get_ai_points()
+	if player_points > ai_points:
+		ai_lives -= 1
+		if ai_lives == 0:
+			game_over(true)
+			return
+		reset_battlefield()
+	elif ai_points > player_points:
+		player_lives -= 1
+		if player_lives == 0:
+			game_over(false)
+			return
+		reset_battlefield()
+	else:
+		ai_lives -=1
+		player_lives -= 1
+		if player_lives == 0 and ai_lives == 0:
+			game_over(null)
+			return
+		elif ai_lives == 0:
+			game_over(true)
+			return
+		elif player_lives == 0:
+			game_over(false)
+			return
+		reset_battlefield()
+
+func _on_pass_turn_pressed() -> void:
+	print("pass pressionado | player_passed: ", player_passed, " | ai_passed: ", ai_passed)
+	if current_state == GameState.PLAYER_TURN:
+		player_passed = true
+		if ai_passed == true:
+			end_turn()
+		else:
+			change_turn()
+
+func game_over(result) -> void:
+	if result == true:
+		$"Game Over".text = "GAME OVER\nVOCE VENCEU"
+	elif result == false:
+		$"Game Over".text = "GAME OVER\nO OPONENTE VENCEU"
+	else:
+		$"Game Over".text = "GAME OVER\nEMPATE"
+	current_state = GameState.END_GAME
+>>>>>>> 416996d
