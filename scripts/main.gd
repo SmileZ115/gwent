@@ -1,15 +1,15 @@
 extends Node2D
 
 var card_scene = preload("res://scenes/Card.tscn")
-var current_state = GameState.START
-var card_pool = []
-var ai_cards
+var current_state: GameState = GameState.START
+var card_pool: Array[CardData]
+var ai_cards: Array[CardData]
 var screen_size: Vector2
 var player_passed: bool
-var ai_passed: bool
 var player_lives: int = 2
 var ai_lives: int = 2
 var round_number: int = 1
+var ai: AI
 
 enum GameState {
 	START,
@@ -19,39 +19,32 @@ enum GameState {
 	END_GAME
 }
 
+enum GameResult {
+	PLAYER_WIN,
+	AI_WIN,
+	DRAW
+}
+
 func _ready() -> void:
+	ai = AI.new()
+	ai.turn_ended.connect(change_turn)
+	ai.round_ended.connect(end_turn)
+	ai.points_updated.connect(calculate_points)
 	screen_size = get_viewport().get_visible_rect().size
-	card_pool = [
-		create_card('Geralt', 15, 'melee'),
-		create_card('Yennefer', 12, 'ranged'),
-		create_card('Ciri', 10, 'melee'),
-		create_card('Triss', 8, 'ranged'),
-		create_card('Zoltan', 6, 'melee'),
-		create_card('Radowid V', 10, 'melee'),
-		create_card('Balista', 6, 'siege'),
-		create_card('Ariete', 5, 'siege'),
-		create_card('Carpeado', 3, 'melee'),
-		create_card('Vesemir', 10, 'melee')
-	]
+	card_pool = CardData.get_pool()
 	deal_cards()
+	ai.setup(card_scene, ai_cards, $AIBattleField, screen_size)
 	start_game()
 
-func create_card(name: String, power: int, type: String) -> CardData:
-	var data = CardData.new()
-	data.card_name = name
-	data.card_power = power
-	data.card_type = type
-	return data
-
-func deal_cards():
+func deal_cards() -> void:
 	card_pool.shuffle()
-	var player_cards = card_pool.slice(0, 5)
-	ai_cards = card_pool.slice(5, 10)
+	var player_cards: Array[CardData] = card_pool.slice(0, 10)
+	ai_cards = card_pool.slice(10, 20)
 	var total_width = player_cards.size() * 90
 	var x_pos = (screen_size.x / 2) - (total_width / 2)
 	var i = 0
 	for data in player_cards:
-		var card = card_scene.instantiate()
+		var card: Card = card_scene.instantiate() as Card
 		card.card_name = data.card_name
 		card.card_power = data.card_power
 		card.position = Vector2(x_pos + (i * 90), (screen_size.y - 180))
@@ -59,7 +52,7 @@ func deal_cards():
 		$Hand.add_child(card)
 		i += 1
 
-func _on_card_clicked(card) -> void:
+func _on_card_clicked(card: Card) -> void:
 	if current_state == GameState.PLAYER_TURN:
 		card.in_field = true
 		$Hand.remove_child(card)
@@ -69,7 +62,7 @@ func _on_card_clicked(card) -> void:
 		change_turn()
 		calculate_points()
 
-func start_game():
+func start_game() -> void:
 	var rand = randi() % 2
 	if rand == 1:
 		current_state = GameState.PLAYER_TURN
@@ -77,49 +70,15 @@ func start_game():
 	else:
 		current_state = GameState.AI_TURN
 		$Turn.text = "AI's Turn"
-		ai_turn()
+		ai.ai_turn(player_passed, get_player_points())
 
-func ai_turn():
-	if ai_passed:
-		if player_passed:
-			end_turn()
-		else:
-			change_turn()
-		return
-	if ai_cards.size() == 0:
-		ai_passed = true
-		if player_passed:
-			end_turn()
-		else:
-			change_turn()
-		return
-	if player_passed and get_ai_points() > get_player_points():
-		ai_passed = true
-		end_turn()
-		return
-	var rand_index = randi() % ai_cards.size()
-	var chosen_card = ai_cards[rand_index]
-	var card = card_scene.instantiate()
-	var count = $AIBattleField.get_child_count()
-	card.card_name = chosen_card.card_name
-	card.card_power = chosen_card.card_power
-	await get_tree().create_timer(1.0).timeout
-	$AIBattleField.add_child(card)
-	card.position = Vector2((screen_size.x / 2) + (count - 1) * 90 - 180, screen_size.y * 0.4)
-	ai_cards.erase(chosen_card)
-	calculate_points()
-	if player_passed:
-		ai_turn()
-	else:
-		change_turn()
-
-func change_turn():
+func change_turn() -> void:
 	if current_state == GameState.END_GAME:
 		return
 	if current_state == GameState.PLAYER_TURN:
 		current_state = GameState.AI_TURN
 		$Turn.text = "AI's Turn"
-		ai_turn()
+		ai.ai_turn(player_passed, get_player_points())
 	else:
 		current_state = GameState.PLAYER_TURN
 		$Turn.text = "Players Turn"
@@ -130,23 +89,17 @@ func get_player_points() -> int:
 		total += card.card_power
 	return total
 
-func get_ai_points() -> int:
-	var total = 0
-	for card in $AIBattleField.get_children():
-		total += card.card_power
-	return total
-
 func calculate_points() -> void:
 	$Points.text = "Pontuacao: " + str(get_player_points())
-	$AIPoints.text = "Pontuacao: " + str(get_ai_points())
+	$AIPoints.text = "Pontuacao: " + str(ai.get_ai_points())
 
-func reset_battlefield():
+func reset_battlefield() -> void:
 	player_passed = false
-	ai_passed = false
-	if get_player_points() > get_ai_points():
+	ai.ai_passed = false
+	if get_player_points() > ai.get_ai_points():
 		current_state = GameState.AI_TURN
 		$Turn.text = "AI's Turn"
-	elif get_ai_points() > get_player_points():
+	elif ai.get_ai_points() > get_player_points():
 		current_state = GameState.PLAYER_TURN
 		$Turn.text = "Players Turn"
 	else:
@@ -158,47 +111,47 @@ func reset_battlefield():
 	$Points.text = "Pontuacao: 0"
 	$AIPoints.text = "Pontuacao: 0"
 
-func end_turn():
+func end_turn() -> void:
 	var player_points = get_player_points()
-	var ai_points = get_ai_points()
+	var ai_points = ai.get_ai_points()
 	if player_points > ai_points:
 		ai_lives -= 1
 		if ai_lives == 0:
-			game_over(true)
+			game_over(GameResult.PLAYER_WIN)
 			return
 		reset_battlefield()
 	elif ai_points > player_points:
 		player_lives -= 1
 		if player_lives == 0:
-			game_over(false)
+			game_over(GameResult.AI_WIN)
 			return
 		reset_battlefield()
 	else:
 		ai_lives -= 1
 		player_lives -= 1
 		if player_lives == 0 and ai_lives == 0:
-			game_over(null)
+			game_over(GameResult.DRAW)
 			return
 		elif ai_lives == 0:
-			game_over(true)
+			game_over(GameResult.PLAYER_WIN)
 			return
 		elif player_lives == 0:
-			game_over(false)
+			game_over(GameResult.AI_WIN)
 			return
 		reset_battlefield()
 
 func _on_pass_turn_pressed() -> void:
 	if current_state == GameState.PLAYER_TURN:
 		player_passed = true
-		if ai_passed == true:
+		if ai.ai_passed == true:
 			end_turn()
 		else:
 			change_turn()
 
-func game_over(result) -> void:
-	if result == true:
+func game_over(result: GameResult) -> void:
+	if result == GameResult.PLAYER_WIN:
 		$"Game Over".text = "GAME OVER\nVOCE VENCEU"
-	elif result == false:
+	elif result == GameResult.AI_WIN:
 		$"Game Over".text = "GAME OVER\nO OPONENTE VENCEU"
 	else:
 		$"Game Over".text = "GAME OVER\nEMPATE"

@@ -1,9 +1,15 @@
 [gd_scene format=3 uid="uid://bnmojecgpbh7p"]
 
 [ext_resource type="Script" uid="uid://c8e4gj3vauhib" path="res://scripts/main.gd" id="1_elqb8"]
+[ext_resource type="Texture2D" uid="uid://c8gu7ohm7e7gv" path="res://images/842c152f-b789-4239-9f43-37bdfdba3a91.png" id="2_rvslj"]
 
 [node name="Node2D" type="Node2D" unique_id=1223189282]
 script = ExtResource("1_elqb8")
+
+[node name="Background" type="Sprite2D" parent="." unique_id=1804484912]
+position = Vector2(960, 540.25)
+scale = Vector2(1.1483254, 1.1471838)
+texture = ExtResource("2_rvslj")
 
 [node name="Hand" type="HBoxContainer" parent="." unique_id=67005531]
 offset_right = 40.0
