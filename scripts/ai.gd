@@ -33,7 +33,7 @@ func ai_turn(player_passed: bool, player_points: int) -> void:
 		return
 	if player_passed and get_ai_points() > player_points:
 		ai_passed = true
-		turn_ended.emit()
+		round_ended.emit()
 		return
 	var rand_index = randi() % hand.size()
 	var chosen_card: CardData = hand[rand_index]

@@ -97,11 +97,12 @@ func reset_battlefield() -> void:
 	player_passed = false
 	ai.ai_passed = false
 	if get_player_points() > ai.get_ai_points():
-		current_state = GameState.AI_TURN
-		$Turn.text = "AI's Turn"
-	elif ai.get_ai_points() > get_player_points():
 		current_state = GameState.PLAYER_TURN
 		$Turn.text = "Players Turn"
+	elif ai.get_ai_points() > get_player_points():
+		current_state = GameState.AI_TURN
+		$Turn.text = "AI's Turn"
+		ai.ai_turn(player_passed, get_player_points())
 	else:
 		start_game()
 	for card in $BattleField.get_children():
